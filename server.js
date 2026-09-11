@@ -666,7 +666,7 @@ app.post('/api/orders', (req, res) => {
 
     // 发送短信通知会员（异步，不影响下单）
     if (member_id) {
-      const smsEnabled = db.prepare("SELECT value FROM settings WHERE key = 'sms_enabled'").get('sms_enabled');
+      const smsEnabled = db.prepare("SELECT value FROM settings WHERE key = ?").get('sms_enabled');
       if (smsEnabled && smsEnabled.value === '1') {
         const member = db.prepare('SELECT * FROM members WHERE id = ?').get(member_id);
         if (member && member.phone) {
