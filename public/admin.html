@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>眼镜店管理系统 - 后台管理端</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1e293b;
+    }
+    .container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 900px;
+      padding: 30px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #f0f4f8;
+    }
+    .header h1 { font-size: 24px; color: #1a73e8; margin-bottom: 5px; }
+    .header p { color: #64748b; font-size: 14px; }
+    .login-box { text-align: center; padding: 40px 20px; }
+    .login-box .icon { font-size: 48px; margin-bottom: 15px; }
+    .login-box h2 { font-size: 20px; margin-bottom: 20px; color: #1e293b; }
+    .login-box input {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: #1a73e8; }
+    .login-box button {
+      padding: 12px 40px;
+      background: linear-gradient(135deg, #1a73e8, #4a90d9);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .login-box button:hover { transform: translateY(-1px); }
+    .login-box .error { color: #ef4444; margin-top: 10px; font-size: 14px; min-height: 20px; }
+    .admin-panel { display: none; }
+    .admin-panel.show { display: block; }
+    .panel-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f0f4f8;
+      padding-bottom: 10px;
+    }
+    .tab-btn {
+      padding: 8px 20px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 15px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { background: #eff6ff; color: #1a73e8; font-weight: 600; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .info-bar {
+      background: #f0f7ff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #1a73e8;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f0f4f8; font-size: 13px; }
+    th { background: #f8fafc; color: #64748b; font-weight: 600; }
+    tr:hover { background: #f8fafc; }
+    .empty { text-align: center; color: #94a3b8; padding: 30px; }
+    .btn-kick {
+      padding: 5px 12px;
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .btn-kick:hover { background: #fee2e2; }
+    .btn-kick:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      background: #dcfce7;
+      color: #16a34a;
+    }
+    .tag.current { background: #dbeafe; color: #1d4ed8; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: #475569; font-size: 14px; }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-group input:focus { border-color: #1a73e8; }
+    .btn-primary {
+      padding: 10px 30px;
+      background: linear-gradient(135deg, #1a73e8, #4a90d9);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-logout {
+      padding: 6px 16px;
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      float: right;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      z-index: 9999;
+      display: none;
+    }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .toast.show { display: block; }
+    .copyright {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #f0f4f8;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>👓 眼镜店管理系统 - 后台管理端</h1>
+      <p>在线设备监控 · 强制下线 · 密码管理</p>
+    </div>
+
+    <!-- 登录页面 -->
+    <div id="login-page" class="login-box">
+      <div class="icon">🔐</div>
+      <h2>请输入管理员密码</h2>
+      <input type="password" id="admin-password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()">
+      <br>
+      <button onclick="doLogin()">登 录</button>
+      <div class="error" id="login-error"></div>
+    </div>
+
+    <!-- 后台管理页面 -->
+    <div id="admin-page" class="admin-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <span style="font-size:16px;font-weight:600;">管理员控制台</span>
+        <button class="btn-logout" onclick="doLogout()">退出登录</button>
+      </div>
+
+      <div class="panel-tabs">
+        <button class="tab-btn active" onclick="switchTab('devices')">📱 在线设备</button>
+        <button class="tab-btn" onclick="switchTab('password')">🔑 修改密码</button>
+      </div>
+
+      <!-- 在线设备 -->
+      <div id="tab-devices" class="tab-content active">
+        <div class="info-bar">
+          当前在线设备：<strong id="device-count">0</strong> 台
+          <button style="float:right;padding:4px 12px;background:#1a73e8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;" onclick="loadDevices()">刷新</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>设备ID</th>
+              <th>登录时间</th>
+              <th>最后活跃</th>
+              <th>浏览器/IP</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="devices-tbody">
+            <tr><td colspan="6" class="empty">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 修改密码 -->
+      <div id="tab-password" class="tab-content">
+        <div style="max-width:400px;margin:0 auto;">
+          <div class="form-group">
+            <label>旧密码</label>
+            <input type="password" id="old-password" placeholder="请输入当前密码">
+          </div>
+          <div class="form-group">
+            <label>新密码（至少6位）</label>
+            <input type="password" id="new-password" placeholder="请输入新密码">
+          </div>
+          <div class="form-group">
+            <label>确认新密码</label>
+            <input type="password" id="confirm-password" placeholder="请再次输入新密码">
+          </div>
+          <button class="btn-primary" onclick="changePassword()">确认修改</button>
+          <p style="color:#94a3b8;font-size:12px;margin-top:15px;">修改密码后，所有已登录设备将被强制下线，需要重新登录。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="copyright">本软件由 TT 游戏工作室与豆包结合开发</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API_BASE = '';
+    let token = localStorage.getItem('admin_token') || '';
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type + ' show';
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    async function doLogin() {
+      const pwd = document.getElementById('admin-password').value;
+      const err = document.getElementById('login-error');
+      if (!pwd) { err.textContent = '请输入密码'; return; }
+      err.textContent = '';
+      try {
+        const res = await fetch(API_BASE + '/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd, deviceId: getDeviceId() })
+        });
+        const data = await res.json();
+        if (data.success) {
+          token = data.data.token;
+          localStorage.setItem('admin_token', token);
+          document.getElementById('login-page').style.display = 'none';
+          document.getElementById('admin-page').classList.add('show');
+          loadDevices();
+        } else {
+          err.textContent = data.message || '密码错误';
+        }
+      } catch (e) {
+        err.textContent = '无法连接服务器';
+      }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('admin_token');
+      token = '';
+      document.getElementById('admin-page').classList.remove('show');
+      document.getElementById('login-page').style.display = 'block';
+      document.getElementById('admin-password').value = '';
+    }
+
+    function getDeviceId() {
+      let id = localStorage.getItem('admin_device_id');
+      if (!id) {
+        id = 'admin-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('admin_device_id', id);
+      }
+      return id;
+    }
+
+    async function api(url, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      const res = await fetch(API_BASE + url, { ...options, headers });
+      if (res.status === 401) { doLogout(); throw new Error('未登录'); }
+      return res.json();
+    }
+
+    async function loadDevices() {
+      try {
+        const res = await api('/api/admin/devices');
+        if (res.success) {
+          document.getElementById('device-count').textContent = res.data.length;
+          const tbody = document.getElementById('devices-tbody');
+          if (res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无在线设备</td></tr>';
+            return;
+          }
+          tbody.innerHTML = res.data.map(d => {
+            const ua = d.userAgent || '';
+            let browser = '未知';
+            if (ua.includes('Edg')) browser = 'Edge';
+            else if (ua.includes('Chrome')) browser = 'Chrome';
+            else if (ua.includes('Firefox')) browser = 'Firefox';
+            else if (ua.includes('Safari')) browser = 'Safari';
+            return `<tr>
+              <td style="font-size:11px;font-family:monospace;">${d.deviceId.substring(0, 20)}...</td>
+              <td>${d.loginTime}</td>
+              <td>${d.lastActiveTime}</td>
+              <td style="font-size:12px;">${browser}<br><span style="color:#94a3b8;">${d.ip || '-'}</span></td>
+              <td>${d.isCurrent ? '<span class="tag current">当前设备</span>' : '<span class="tag">在线</span>'}</td>
+              <td>${d.isCurrent ? '-' : `<button class="btn-kick" onclick="kickDevice('${d.tokenFull}')">强制下线</button>`}</td>
+            </tr>`;
+          }).join('');
+        }
+      } catch (e) {
+        document.getElementById('devices-tbody').innerHTML = '<tr><td colspan="6" class="empty">加载失败</td></tr>';
+      }
+    }
+
+    async function kickDevice(t) {
+      if (!confirm('确定要强制下线该设备吗？')) return;
+      try {
+        const res = await api('/api/admin/kick', { method: 'POST', body: JSON.stringify({ token: t }) });
+        if (res.success) {
+          showToast(res.message);
+          loadDevices();
+        } else {
+          showToast(res.message || '操作失败', 'error');
+        }
+      } catch (e) {
+        showToast('操作失败', 'error');
+      }
+    }
+
+    async function changePassword() {
+      const oldPwd = document.getElementById('old-password').value;
+      const newPwd = document.getElementById('new-password').value;
+      const confirmPwd = document.getElementById('confirm-password').value;
+      if (!oldPwd || !newPwd || !confirmPwd) { showToast('请填写完整', 'error'); return; }
+      if (newPwd.length < 6) { showToast('新密码至少6位', 'error'); return; }
+      if (newPwd !== confirmPwd) { showToast('两次输入的新密码不一致', 'error'); return; }
+      try {
+        const res = await api('/api/admin/change-password', {
+          method: 'POST',
+          body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+        });
+        if (res.success) {
+          showToast('密码修改成功，所有设备将下线');
+          setTimeout(() => doLogout(), 1500);
+        } else {
+          showToast(res.message || '修改失败', 'error');
+        }
+      } catch (e) {
+        showToast('修改失败', 'error');
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    // 检查是否已登录
+    if (token) {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('admin-page').classList.add('show');
+      loadDevices();
+    }
+  </script>
+</body>
+</html>

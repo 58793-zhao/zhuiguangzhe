@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>眼镜店管理系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👓</text></svg>">
+</head>
+<body>
+
+<!-- 加载遮罩 -->
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-content">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">正在连接服务器...</div>
+    <div class="loading-subtext" id="loading-subtext">首次打开可能需要几十秒唤醒服务器，请稍候</div>
+  </div>
+</div>
+
+
+<!-- 登录页面 -->
+<div id="login-page" class="login-page">
+  <div class="login-card">
+    <div class="login-icon">👓</div>
+    <h2 class="login-title">追光者眼镜</h2>
+    <p class="login-subtitle">眼镜店管理系统</p>
+    <div class="login-form">
+      <div class="login-input-group">
+        <span class="login-input-icon">🔒</span>
+        <input type="password" id="login-password" class="login-input" placeholder="请输入登录密码" autocomplete="off">
+      </div>
+      <button class="login-btn" id="login-submit-btn" onclick="doLogin()">登 录</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+    <div class="login-footer">登录状态保持24小时 · 15分钟无操作自动退出</div>
+  </div>
+</div>
+
+<!-- 主布局 -->
+<div id="app" class="app-container" style="display:none;">
+
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">👓</span>
+      <span class="logo-text" id="logo-store-name">追光者眼镜</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">📊</span><span>仪表盘</span>
+      </a>
+      <a href="#" class="nav-item" data-page="members">
+        <span class="nav-icon">👥</span><span>会员管理</span>
+      </a>
+      <a href="#" class="nav-item" data-page="products">
+        <span class="nav-icon">📦</span><span>库存管理</span>
+      </a>
+      <a href="#" class="nav-item" data-page="cashier">
+        <span class="nav-icon">💰</span><span>消费收银</span>
+      </a>
+      <a href="#" class="nav-item" data-page="optometry">
+        <span class="nav-icon">🔬</span><span>验光管理</span>
+      </a>
+      <a href="#" class="nav-item" data-page="orders">
+        <span class="nav-icon">📋</span><span>订单记录</span>
+      </a>
+      <a href="#" class="nav-item" data-page="settings">
+        <span class="nav-icon">⚙️</span><span>系统设置</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="store-info" id="sidebar-store-name">明视眼镜店</div>
+      <div class="copyright">本软件由 TT 游戏工作室与豆包结合开发</div>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <header class="top-bar">
+      <h1 class="page-title" id="page-title">仪表盘</h1>
+      <div class="top-bar-right">
+        <span class="server-status" id="server-status">
+          <span class="status-dot online"></span> 服务器在线
+        </span>
+        <button class="logout-btn" onclick="doLogout()" title="退出登录">🚪 退出</button>
+        <span class="current-date" id="current-date"></span>
+      </div>
+    </header>
+
+    <div class="content-area">
+
+      <!-- ========== 仪表盘页面 ========== -->
+      <section id="page-dashboard" class="page active">
+        <div class="store-revenue-row">
+          <div class="store-revenue-card changzhou">
+            <div class="store-revenue-header">
+              <span class="store-icon">🏪</span>
+              <span class="store-name">常州路店</span>
+            </div>
+            <div class="store-revenue-value" id="stat-changzhou-revenue">¥0.00</div>
+            <div class="store-revenue-orders">今日订单：<span id="stat-changzhou-orders">0</span> 单</div>
+            <div class="store-revenue-month">本月累计：<span id="stat-changzhou-month">¥0.00</span></div>
+          </div>
+          <div class="store-revenue-card zhongqi">
+            <div class="store-revenue-header">
+              <span class="store-icon">🏬</span>
+              <span class="store-name">中启广场店</span>
+            </div>
+            <div class="store-revenue-value" id="stat-zhongqi-revenue">¥0.00</div>
+            <div class="store-revenue-orders">今日订单：<span id="stat-zhongqi-orders">0</span> 单</div>
+            <div class="store-revenue-month">本月累计：<span id="stat-zhongqi-month">¥0.00</span></div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card gradient-green">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info">
+              <div class="stat-label">今日订单数</div>
+              <div class="stat-value" id="stat-today-orders">0</div>
+            </div>
+          </div>
+          <div class="stat-card gradient-purple">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <div class="stat-label">会员总数</div>
+              <div class="stat-value" id="stat-total-members">0</div>
+            </div>
+          </div>
+          <div class="stat-card gradient-orange">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-info">
+              <div class="stat-label">库存预警</div>
+              <div class="stat-value" id="stat-low-stock">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-row">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h3>📦 库存预警商品</h3>
+            </div>
+            <div class="panel-body">
+              <table class="data-table compact">
+                <thead><tr><th>商品名称</th><th>分类</th><th>当前库存</th><th>预警值</th></tr></thead>
+                <tbody id="low-stock-tbody"><tr><td colspan="4" class="empty-cell">暂无预警商品</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-row two-col">
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h3>🛒 最近订单</h3>
+              <button class="btn-link" onclick="navigateTo('orders')">查看全部 →</button>
+            </div>
+            <div class="panel-body">
+              <table class="data-table compact">
+                <thead><tr><th>订单号</th><th>会员</th><th>金额</th><th>时间</th></tr></thead>
+                <tbody id="recent-orders-tbody"><tr><td colspan="4" class="empty-cell">暂无订单</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="dashboard-panel">
+            <div class="panel-header">
+              <h3>🔬 最近验光</h3>
+              <button class="btn-link" onclick="navigateTo('optometry')">查看全部 →</button>
+            </div>
+            <div class="panel-body">
+              <table class="data-table compact">
+                <thead><tr><th>姓名</th><th>右眼</th><th>左眼</th><th>时间</th></tr></thead>
+                <tbody id="recent-optometry-tbody"><tr><td colspan="4" class="empty-cell">暂无验光记录</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 会员管理页面 ========== -->
+      <section id="page-members" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <input type="text" id="member-search" class="search-input" placeholder="🔍 搜索会员姓名或手机号...">
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" onclick="openMemberModal()">➕ 添加会员</button>
+          </div>
+        </div>
+        <div class="data-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>姓名</th><th>手机号</th><th>性别</th><th>生日</th>
+                <th>余额</th><th>累计消费</th><th>积分</th><th>注册时间</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="members-tbody"><tr><td colspan="10" class="empty-cell">加载中...</td></tr></tbody>
+          </table>
+          <div class="pagination" id="members-pagination">
+            <span class="pagination-info" id="members-pagination-info">共 0 条</span>
+            <div class="pagination-buttons">
+              <button class="page-btn" onclick="changeMemberPage(1)" id="members-page-first">首页</button>
+              <button class="page-btn" onclick="changeMemberPage(state.memberPage - 1)" id="members-page-prev">上一页</button>
+              <span class="page-current" id="members-page-current">1 / 1</span>
+              <button class="page-btn" onclick="changeMemberPage(state.memberPage + 1)" id="members-page-next">下一页</button>
+              <button class="page-btn" onclick="changeMemberPage(state.memberTotalPages)" id="members-page-last">末页</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 库存管理页面 ========== -->
+      <section id="page-products" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <input type="text" id="product-search" class="search-input" placeholder="🔍 搜索商品名称/品牌/型号...">
+            <select id="product-category-filter" class="filter-select" onchange="loadProducts()">
+              <option value="全部">全部分类</option>
+              <option value="镜片">镜片</option>
+              <option value="镜架">镜架</option>
+              <option value="隐形眼镜">隐形眼镜</option>
+              <option value="配件">配件</option>
+              <option value="其他">其他</option>
+            </select>
+            <label class="checkbox-label">
+              <input type="checkbox" id="product-low-stock-only" onchange="loadProducts()"> 仅看预警
+            </label>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" onclick="openProductModal()">➕ 添加商品</button>
+          </div>
+        </div>
+        <div class="data-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>商品名称</th><th>分类</th><th>品牌</th><th>型号/规格</th>
+                <th>售价</th><th>成本</th><th>库存</th><th>单位</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"><tr><td colspan="10" class="empty-cell">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== 消费收银页面 ========== -->
+      <section id="page-cashier" class="page">
+        <div class="cashier-layout">
+          <div class="cashier-left">
+            <div class="data-card">
+              <div class="card-header"><h3>🛒 选择商品</h3></div>
+              <div class="card-body">
+                <input type="text" id="cashier-product-search" class="search-input" placeholder="🔍 搜索商品..." oninput="filterCashierProducts()">
+                <div class="product-grid" id="cashier-product-grid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="cashier-right">
+            <div class="data-card sticky-card">
+              <div class="card-header"><h3>🧾 收银台</h3></div>
+              <div class="card-body">
+                <div class="member-select-area">
+                  <label>选择会员（可选）</label>
+                  <div class="member-select-row">
+                    <input type="text" id="cashier-member-search" class="search-input small" placeholder="搜索会员姓名/手机号..." oninput="searchCashierMembers()">
+                    <div id="cashier-member-list" class="member-dropdown"></div>
+                  </div>
+                  <div id="cashier-selected-member" class="selected-member" style="display:none;">
+                    <span id="cashier-member-name"></span>
+                    <span id="cashier-member-balance"></span>
+                    <button class="btn-clear" onclick="clearCashierMember()">✕</button>
+                  </div>
+                </div>
+
+                <div class="cart-items" id="cashier-cart">
+                  <div class="empty-cart">购物车为空，请从左侧选择商品</div>
+                </div>
+
+                <div class="cashier-summary">
+                  <div class="summary-row">
+                    <span>商品合计</span>
+                    <span id="cashier-subtotal">¥0.00</span>
+                  </div>
+                  <div class="summary-row">
+                    <span>实付金额</span>
+                    <input type="number" id="cashier-final-amount" class="discount-input" value="0" min="0" step="0.01" placeholder="可手动修改" oninput="onFinalAmountChange()">
+                  </div>
+                  <div class="summary-row" id="cashier-discount-row" style="display:none;">
+                    <span style="color:#16a34a;">优惠</span>
+                    <span id="cashier-discount-amount" style="color:#16a34a;">¥0.00</span>
+                  </div>
+                  <div class="summary-row total">
+                    <span>应收金额</span>
+                    <span id="cashier-total">¥0.00</span>
+                  </div>
+                </div>
+
+                <div class="time-select-area">
+                  <label>🕐 消费时间（默认当前，可修改）</label>
+                  <input type="datetime-local" id="cashier-order-time" class="form-input">
+                </div>
+
+                <div class="store-select-area">
+                  <label>🏪 消费门店</label>
+                  <div class="store-select-btns">
+                    <button class="store-btn active" data-store="常州路店" onclick="selectStore(this)">常州路店</button>
+                    <button class="store-btn" data-store="中启广场店" onclick="selectStore(this)">中启广场店</button>
+                  </div>
+                </div>
+
+                <div class="pay-method-area">
+                  <label>支付方式</label>
+                  <div class="pay-method-btns">
+                    <button class="pay-btn active" data-method="余额" onclick="selectPayMethod(this)">💳 余额支付</button>
+                    <button class="pay-btn" data-method="现金" onclick="selectPayMethod(this)">💵 现金</button>
+                    <button class="pay-btn" data-method="微信" onclick="selectPayMethod(this)">📱 微信</button>
+                    <button class="pay-btn" data-method="支付宝" onclick="selectPayMethod(this)">📱 支付宝</button>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary btn-block btn-large" id="cashier-submit-btn" onclick="submitOrder()">💰 确认收款</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== 验光管理页面 ========== -->
+      <section id="page-optometry" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <input type="text" id="optometry-search" class="search-input" placeholder="🔍 搜索姓名或手机号...">
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" onclick="openOptometryModal()">➕ 新增验光</button>
+          </div>
+        </div>
+        <div class="data-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>姓名</th><th>手机号</th><th>年龄</th><th>性别</th>
+                <th>右眼(球/柱/轴)</th><th>左眼(球/柱/轴)</th><th>瞳距(右/左)</th>
+                <th>验光师</th><th>验光时间</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="optometry-tbody"><tr><td colspan="11" class="empty-cell">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== 订单记录页面 ========== -->
+      <section id="page-orders" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <input type="text" id="order-search" class="search-input" placeholder="🔍 搜索订单号或会员名...">
+            <input type="date" id="order-start-date" class="filter-select" onchange="loadOrders()">
+            <span class="date-sep">至</span>
+            <input type="date" id="order-end-date" class="filter-select" onchange="loadOrders()">
+            <button class="btn btn-outline" onclick="clearOrderFilters()">清除筛选</button>
+          </div>
+        </div>
+        <div class="data-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>订单号</th><th>会员</th><th>商品明细</th><th>原价</th><th>优惠</th>
+                <th>实付</th><th>支付方式</th><th>门店</th><th>操作员</th><th>时间</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"><tr><td colspan="11" class="empty-cell">加载中...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== 系统设置页面 ========== -->
+      <section id="page-settings" class="page">
+        <div class="settings-layout">
+          <div class="data-card">
+            <div class="card-header"><h3>🏪 门店信息</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>门店名称</label>
+                <input type="text" id="setting-store-name" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>联系电话</label>
+                <input type="text" id="setting-store-phone" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>门店地址</label>
+                <input type="text" id="setting-store-address" class="form-input">
+              </div>
+              <div class="form-group">
+                <label>小票底部文字</label>
+                <input type="text" id="setting-receipt-footer" class="form-input">
+              </div>
+              <button class="btn btn-primary" onclick="saveSettings()">💾 保存设置</button>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="card-header"><h3>💾 数据管理</h3></div>
+            <div class="card-body">
+              <div class="data-action-item">
+                <div class="action-info">
+                  <h4>下载数据备份</h4>
+                  <p>导出全部数据为JSON文件，包含会员、商品、订单、验光等所有数据</p>
+                </div>
+                <button class="btn btn-primary" onclick="downloadBackup()">📥 下载备份</button>
+              </div>
+              <div class="data-action-item">
+                <div class="action-info">
+                  <h4>导入数据备份</h4>
+                  <p>从JSON备份文件恢复数据（⚠️ 会覆盖当前所有数据，请谨慎操作）</p>
+                </div>
+                <div>
+                  <input type="file" id="restore-file" accept=".json" style="display:none" onchange="restoreBackup(this)">
+                  <button class="btn btn-warning" onclick="document.getElementById('restore-file').click()">📤 导入备份</button>
+                </div>
+              </div>
+              <div class="data-action-item">
+                <div class="action-info">
+                  <h4>服务器信息</h4>
+                  <p id="server-info-text">正在获取...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="card-header"><h3>📱 短信通知</h3></div>
+            <div class="card-body">
+              <div class="data-action-item">
+                <div class="action-info">
+                  <h4>消费成功短信通知</h4>
+                  <p>会员消费后，自动给会员手机发送消费通知短信</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="setting-sms-enabled" onchange="toggleSMS(this)">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="data-action-item">
+                <div class="action-info">
+                  <h4>当前状态</h4>
+                  <p id="sms-status-text">正在加载...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="card-header"><h3>ℹ️ 关于系统</h3></div>
+            <div class="card-body about-section">
+              <div class="about-logo">👓</div>
+              <h3>眼镜店管理系统 网络版 v1.0.0</h3>
+              <p>支持多门店数据实时共享，会员、库存、订单、验光一体化管理</p>
+              <div class="about-features">
+                <span class="feature-tag">👥 会员管理</span>
+                <span class="feature-tag">📦 库存管理</span>
+                <span class="feature-tag">💰 消费收银</span>
+                <span class="feature-tag">🔬 验光管理</span>
+                <span class="feature-tag">📋 订单记录</span>
+                <span class="feature-tag">💾 自动备份</span>
+              </div>
+              <div class="about-copyright">
+                <p>本软件由 TT 游戏工作室与豆包结合开发</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========== 后台管理页面 ========== -->
+      <section id="page-admin" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h3 style="margin:0;">🔐 后台管理</h3>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-outline" onclick="navigateTo('settings')">← 返回设置</button>
+            <button class="btn btn-primary" onclick="loadAdminDevices()">🔄 刷新设备列表</button>
+          </div>
+        </div>
+
+        <div class="settings-layout">
+          <!-- 在线设备 -->
+          <div class="data-card">
+            <div class="card-header"><h3>📱 在线设备 (<span id="admin-device-count">0</span>)</h3></div>
+            <div class="card-body" style="padding:0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>设备ID</th><th>登录时间</th><th>最后活跃</th><th>浏览器/IP</th><th>状态</th><th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-devices-tbody"><tr><td colspan="6" class="empty-cell">加载中...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 修改密码 -->
+          <div class="data-card">
+            <div class="card-header"><h3>🔑 修改登录密码</h3></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>当前密码</label>
+                <input type="password" id="admin-old-password" class="form-input" placeholder="请输入当前密码">
+              </div>
+              <div class="form-group">
+                <label>新密码（至少6位）</label>
+                <input type="password" id="admin-new-password" class="form-input" placeholder="请输入新密码">
+              </div>
+              <div class="form-group">
+                <label>确认新密码</label>
+                <input type="password" id="admin-confirm-password" class="form-input" placeholder="再次输入新密码">
+              </div>
+              <button class="btn btn-primary btn-block" onclick="changeAdminPassword()">💾 确认修改</button>
+              <p style="font-size:12px;color:var(--text-light);margin-top:12px;">⚠️ 修改密码后，所有已登录设备将被强制下线，需重新登录。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ========== 会员添加/编辑弹窗 ========== -->
+<div id="member-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="member-modal-title">添加会员</h3>
+      <button class="modal-close" onclick="closeModal('member-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="member-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>姓名 *</label>
+          <input type="text" id="member-name" class="form-input" placeholder="请输入会员姓名">
+        </div>
+        <div class="form-group">
+          <label>手机号</label>
+          <input type="text" id="member-phone" class="form-input" placeholder="请输入手机号">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>性别</label>
+          <select id="member-gender" class="form-input">
+            <option value="未填写">未填写</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>生日</label>
+          <input type="date" id="member-birthday" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>地址</label>
+        <input type="text" id="member-address" class="form-input" placeholder="请输入地址">
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="member-remark" class="form-input" rows="2" placeholder="备注信息"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('member-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveMember()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 会员充值弹窗 ========== -->
+<div id="recharge-modal" class="modal-overlay">
+  <div class="modal modal-small">
+    <div class="modal-header">
+      <h3>💰 会员充值</h3>
+      <button class="modal-close" onclick="closeModal('recharge-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="recharge-member-id">
+      <div class="recharge-member-info" id="recharge-member-info"></div>
+      <div class="form-group">
+        <label>充值金额 *</label>
+        <input type="number" id="recharge-amount" class="form-input" placeholder="请输入充值金额" min="0.01" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>赠送金额</label>
+        <input type="number" id="recharge-bonus" class="form-input" placeholder="赠送金额（可选）" min="0" step="0.01" value="0">
+      </div>
+      <div class="form-group">
+        <label>支付方式</label>
+        <select id="recharge-pay-method" class="form-input">
+          <option value="现金">现金</option>
+          <option value="微信">微信</option>
+          <option value="支付宝">支付宝</option>
+          <option value="银行卡">银行卡</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>🏪 充值门店</label>
+        <select id="recharge-store" class="form-input">
+          <option value="常州路店">常州路店</option>
+          <option value="中启广场店">中启广场店</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <input type="text" id="recharge-remark" class="form-input" placeholder="备注信息">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('recharge-modal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmRecharge()">确认充值</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 会员详情弹窗 ========== -->
+<div id="member-detail-modal" class="modal-overlay">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3 id="member-detail-title">👤 会员详情</h3>
+      <button class="modal-close" onclick="closeModal('member-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- 会员基本信息卡片 -->
+      <div class="member-detail-info" id="member-detail-info"></div>
+      
+      <!-- 标签页 -->
+      <div class="detail-tabs">
+        <button class="detail-tab active" onclick="switchDetailTab('orders')">🛒 消费记录 (<span id="detail-order-count">0</span>)</button>
+        <button class="detail-tab" onclick="switchDetailTab('recharges')">💰 充值记录 (<span id="detail-recharge-count">0</span>)</button>
+      </div>
+      
+      <!-- 消费记录 -->
+      <div id="detail-orders-panel" class="detail-panel">
+        <table class="data-table compact">
+          <thead>
+            <tr><th>订单号</th><th>时间</th><th>商品</th><th>金额</th><th>支付方式</th><th>消费门店</th><th>状态</th></tr>
+          </thead>
+          <tbody id="detail-orders-tbody"><tr><td colspan="7" class="empty-cell">加载中...</td></tr></tbody>
+        </table>
+      </div>
+      
+      <!-- 充值记录 -->
+      <div id="detail-recharges-panel" class="detail-panel" style="display:none;">
+        <table class="data-table compact">
+          <thead>
+            <tr><th>时间</th><th>充值金额</th><th>赠送金额</th><th>实际到账</th><th>支付方式</th><th>充值门店</th><th>备注</th></tr>
+          </thead>
+          <tbody id="detail-recharges-tbody"><tr><td colspan="7" class="empty-cell">加载中...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('member-detail-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 商品添加/编辑弹窗 ========== -->
+<div id="product-modal" class="modal-overlay">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3 id="product-modal-title">添加商品</h3>
+      <button class="modal-close" onclick="closeModal('product-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="product-edit-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label>商品名称 *</label>
+          <input type="text" id="product-name" class="form-input" placeholder="如：1.56非球面镜片">
+        </div>
+        <div class="form-group">
+          <label>分类</label>
+          <select id="product-category" class="form-input">
+            <option value="镜片">镜片</option>
+            <option value="镜架">镜架</option>
+            <option value="隐形眼镜">隐形眼镜</option>
+            <option value="配件">配件</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>品牌</label>
+          <input type="text" id="product-brand" class="form-input" placeholder="如：明月、依视路">
+        </div>
+        <div class="form-group">
+          <label>型号</label>
+          <input type="text" id="product-model" class="form-input" placeholder="型号">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>规格</label>
+          <input type="text" id="product-spec" class="form-input" placeholder="如：常规、超薄">
+        </div>
+        <div class="form-group">
+          <label>单位</label>
+          <input type="text" id="product-unit" class="form-input" value="副" placeholder="如：副、件、瓶">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>售价 (元)</label>
+          <input type="number" id="product-price" class="form-input" min="0" step="0.01" value="0">
+        </div>
+        <div class="form-group">
+          <label>成本 (元)</label>
+          <input type="number" id="product-cost" class="form-input" min="0" step="0.01" value="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>初始库存</label>
+          <input type="number" id="product-stock" class="form-input" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>库存预警值</label>
+          <input type="number" id="product-min-stock" class="form-input" min="0" value="5">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="product-remark" class="form-input" rows="2" placeholder="备注信息"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('product-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveProduct()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 商品入库弹窗 ========== -->
+<div id="stock-in-modal" class="modal-overlay">
+  <div class="modal modal-small">
+    <div class="modal-header">
+      <h3>📦 商品入库</h3>
+      <button class="modal-close" onclick="closeModal('stock-in-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="stock-in-product-id">
+      <div class="stock-in-product-info" id="stock-in-product-info"></div>
+      <div class="form-group">
+        <label>入库数量 *</label>
+        <input type="number" id="stock-in-quantity" class="form-input" min="1" value="1" placeholder="入库数量">
+      </div>
+      <div class="form-group">
+        <label>单价 (元)</label>
+        <input type="number" id="stock-in-unit-cost" class="form-input" min="0" step="0.01" placeholder="留空则使用当前成本价">
+      </div>
+      <div class="form-group">
+        <label>供应商</label>
+        <input type="text" id="stock-in-supplier" class="form-input" placeholder="供应商名称">
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <input type="text" id="stock-in-remark" class="form-input" placeholder="备注信息">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('stock-in-modal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmStockIn()">确认入库</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 验光添加/编辑弹窗 ========== -->
+<div id="optometry-modal" class="modal-overlay">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3 id="optometry-modal-title">新增验光</h3>
+      <button class="modal-close" onclick="closeModal('optometry-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="optometry-edit-id">
+      <input type="hidden" id="optometry-member-id">
+
+      <!-- 第一步：选择会员 -->
+      <div class="optometry-step">
+        <div class="step-title">👤 第一步：选择会员</div>
+        <div class="member-search-area">
+          <input type="text" id="optometry-member-search" class="form-input" placeholder="🔍 输入会员姓名或手机号搜索..." oninput="searchOptometryMembers()">
+          <div id="optometry-member-list" class="member-dropdown"></div>
+        </div>
+        <div class="search-hint">💡 提示：输入姓名或手机号后，会在下方显示匹配的会员，点击即可选择</div>
+        <div id="optometry-selected-member-info" class="selected-member-card" style="display:none;">
+          <div class="member-avatar">👤</div>
+          <div class="member-details">
+            <div class="member-name-row">
+              <strong id="optometry-sel-name"></strong>
+              <span class="member-phone" id="optometry-sel-phone"></span>
+            </div>
+            <div class="member-meta">
+              <span id="optometry-sel-gender"></span>
+              <span id="optometry-sel-age"></span>
+              <span class="member-balance">余额：<span id="optometry-sel-balance"></span></span>
+            </div>
+          </div>
+          <button class="btn-clear-member" onclick="clearOptometryMember()">✕ 更换</button>
+        </div>
+      </div>
+
+      <!-- 历史验光记录（选择会员后显示） -->
+      <div id="optometry-history-section" class="optometry-step" style="display:none;">
+        <div class="step-title">📜 历史验光记录（点击可快速填充度数）</div>
+        <div id="optometry-history-list" class="history-quick-list">
+          <div class="empty-cell">加载中...</div>
+        </div>
+      </div>
+
+      <!-- 第二步：录入验光数据 -->
+      <div class="optometry-step">
+        <div class="step-title">👁️ 第二步：录入验光数据</div>
+
+      <div class="eye-section">
+        <h4>右眼 (R)</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>球镜 (SPH)</label>
+            <input type="number" id="optometry-r-sphere" class="form-input" step="0.25" placeholder="-3.00">
+          </div>
+          <div class="form-group">
+            <label>柱镜 (CYL)</label>
+            <input type="number" id="optometry-r-cylinder" class="form-input" step="0.25" placeholder="-0.50">
+          </div>
+          <div class="form-group">
+            <label>轴位 (AXIS)</label>
+            <input type="number" id="optometry-r-axis" class="form-input" min="0" max="180" placeholder="175">
+          </div>
+          <div class="form-group">
+            <label>矫正视力</label>
+            <input type="text" id="optometry-r-vision" class="form-input" placeholder="1.0">
+          </div>
+          <div class="form-group">
+            <label>瞳距 PD</label>
+            <input type="number" id="optometry-r-pd" class="form-input" step="0.5" placeholder="32">
+          </div>
+        </div>
+      </div>
+
+      <div class="eye-section">
+        <h4>左眼 (L)</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>球镜 (SPH)</label>
+            <input type="number" id="optometry-l-sphere" class="form-input" step="0.25" placeholder="-3.00">
+          </div>
+          <div class="form-group">
+            <label>柱镜 (CYL)</label>
+            <input type="number" id="optometry-l-cylinder" class="form-input" step="0.25" placeholder="-0.50">
+          </div>
+          <div class="form-group">
+            <label>轴位 (AXIS)</label>
+            <input type="number" id="optometry-l-axis" class="form-input" min="0" max="180" placeholder="5">
+          </div>
+          <div class="form-group">
+            <label>矫正视力</label>
+            <input type="text" id="optometry-l-vision" class="form-input" placeholder="1.0">
+          </div>
+          <div class="form-group">
+            <label>瞳距 PD</label>
+            <input type="number" id="optometry-l-pd" class="form-input" step="0.5" placeholder="32">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>下加光 (ADD)</label>
+          <input type="number" id="optometry-add-power" class="form-input" step="0.25" placeholder="渐进片用">
+        </div>
+        <div class="form-group">
+          <label>🕐 验光时间（默认当前，可修改）</label>
+          <input type="datetime-local" id="optometry-time" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>验光师</label>
+          <input type="text" id="optometry-optometrist" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>🏪 门店</label>
+          <select id="optometry-store" class="form-input">
+            <option value="常州路店">常州路店</option>
+            <option value="中启广场店">中启广场店</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>🔍 镜片品牌</label>
+          <input type="text" id="optometry-lens-brand" class="form-input" placeholder="如：蔡司、依视路、明月等">
+        </div>
+        <div class="form-group">
+          <label>👓 镜架品牌</label>
+          <input type="text" id="optometry-frame-brand" class="form-input" placeholder="如：雷朋、暴龙、派丽蒙等">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>诊断意见</label>
+        <textarea id="optometry-diagnosis" class="form-input" rows="2" placeholder="如：双眼近视散光，建议常戴"></textarea>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="optometry-remark" class="form-input" rows="2" placeholder="备注信息"></textarea>
+      </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('optometry-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveOptometry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 订单确认弹窗 ========== -->
+<div id="order-confirm-modal" class="modal-overlay">
+  <div class="modal modal-small">
+    <div class="modal-header">
+      <h3>⚠️ 确认收款</h3>
+      <button class="modal-close" onclick="closeModal('order-confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="order-confirm-content" class="confirm-content"></div>
+      <div class="confirm-warning">请仔细核对以上信息，确认后将完成收款并扣减库存/余额</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('order-confirm-modal')">再检查一下</button>
+      <button class="btn btn-primary" onclick="doSubmitOrder()">✅ 确认无误，收款</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 历史验光记录弹窗 ========== -->
+<div id="optometry-history-modal" class="modal-overlay">
+  <div class="modal modal-large">
+    <div class="modal-header">
+      <h3 id="history-modal-title">📜 历史验光记录</h3>
+      <button class="modal-close" onclick="closeModal('optometry-history-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="history-member-info" class="history-member-info"></div>
+      <div class="history-timeline" id="history-timeline">
+        <div class="empty-cell">加载中...</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('optometry-history-modal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ========== 后台管理密码验证弹窗 ========== -->
+<div id="admin-verify-modal" class="modal-overlay">
+  <div class="modal modal-small">
+    <div class="modal-header">
+      <h3>🔐 身份验证</h3>
+      <button class="modal-close" onclick="closeModal('admin-verify-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:16px;color:var(--text-light);">进入后台管理需要再次验证密码</p>
+      <div class="form-group">
+        <label>登录密码</label>
+        <input type="password" id="admin-verify-password" class="form-input" placeholder="请输入密码" onkeydown="if(event.key==='Enter')verifyAdminPassword()">
+      </div>
+      <div class="login-error" id="admin-verify-error"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('admin-verify-modal')">取消</button>
+      <button class="btn btn-primary" onclick="verifyAdminPassword()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 验光报告单打印区域 ========== -->
+<div id="print-area" class="print-area">
+  <div class="print-header">
+    <h2 id="print-store-name">明视眼镜店</h2>
+    <p id="print-store-info">电话：0532-88888888 | 地址：青岛市市南区XX路XX号</p>
+    <h3>验光报告单</h3>
+  </div>
+  <div class="print-body">
+    <table class="print-table">
+      <tr>
+        <td><strong>姓名：</strong><span id="print-name"></span></td>
+        <td><strong>性别：</strong><span id="print-gender"></span></td>
+        <td><strong>年龄：</strong><span id="print-age"></span></td>
+        <td><strong>日期：</strong><span id="print-date"></span></td>
+      </tr>
+      <tr>
+        <td><strong>电话：</strong><span id="print-phone"></span></td>
+        <td><strong>右眼PD：</strong><span id="print-r-pd"></span> mm</td>
+        <td><strong>左眼PD：</strong><span id="print-l-pd"></span> mm</td>
+        <td><strong>验光师：</strong><span id="print-optometrist"></span></td>
+      </tr>
+      <tr>
+        <td colspan="2"><strong>门店：</strong><span id="print-store"></span></td>
+        <td colspan="2"><strong>🔍 镜片品牌：</strong><span id="print-lens-brand"></span> <strong>👓 镜架品牌：</strong><span id="print-frame-brand"></span></td>
+      </tr>
+    </table>
+    <table class="print-table eye-table">
+      <thead>
+        <tr>
+          <th></th><th>球镜 SPH</th><th>柱镜 CYL</th><th>轴位 AXIS</th><th>矫正视力</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>右眼 (R)</strong></td>
+          <td id="print-r-sphere"></td>
+          <td id="print-r-cylinder"></td>
+          <td id="print-r-axis"></td>
+          <td id="print-r-vision"></td>
+        </tr>
+        <tr>
+          <td><strong>左眼 (L)</strong></td>
+          <td id="print-l-sphere"></td>
+          <td id="print-l-cylinder"></td>
+          <td id="print-l-axis"></td>
+          <td id="print-l-vision"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="print-section">
+      <p><strong>诊断意见：</strong><span id="print-diagnosis"></span></p>
+      <p><strong>备注：</strong><span id="print-remark"></span></p>
+    </div>
+    <div class="print-footer">
+      <p id="print-footer-text">感谢您的惠顾，明视眼镜竭诚为您服务！</p>
+      <p>本软件由 TT 游戏工作室与豆包结合开发</p>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 提示 -->
+<div id="toast" class="toast"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

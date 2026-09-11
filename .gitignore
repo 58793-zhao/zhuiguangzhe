@@ -1,0 +1,25 @@
+# 依赖文件夹
+node_modules/
+electron/node_modules/
+admin-electron/node_modules/
+
+# 数据文件（数据库和备份不提交到代码仓库）
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/backups/
+
+# Electron 打包输出
+electron/dist/
+electron/out/
+admin-electron/dist/
+admin-electron/out/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
+
+# 环境变量
+.env
+.env.local

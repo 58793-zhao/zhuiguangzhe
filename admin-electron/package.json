@@ -1,0 +1,42 @@
+{
+  "name": "glasses-shop-admin",
+  "version": "1.0.0",
+  "description": "眼镜店管理系统 - 后台管理端",
+  "main": "main.js",
+  "author": "TT游戏工作室 & 豆包",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.ttgames.glassesshop.admin",
+    "productName": "眼镜店管理系统-后台管理端",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "眼镜店后台管理端",
+      "perMachine": false
+    }
+  }
+}

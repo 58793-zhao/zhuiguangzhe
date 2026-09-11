@@ -1,0 +1,47 @@
+{
+  "name": "glasses-shop-desktop",
+  "version": "1.0.0",
+  "description": "眼镜店管理系统 - 桌面客户端",
+  "main": "main.js",
+  "author": "TT游戏工作室 & 豆包",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:win-portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.ttgames.glassesshop",
+    "productName": "眼镜店管理系统",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "眼镜店管理系统",
+      "perMachine": false
+    },
+    "portable": {
+      "artifactName": "眼镜店管理系统-便携版.exe"
+    }
+  }
+}
