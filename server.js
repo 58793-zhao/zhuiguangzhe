@@ -21,7 +21,7 @@ const app = express();
 const SMS_CONFIG = {
   accessKeyId: process.env.ALIYUN_ACCESS_KEY_ID || '',
   accessKeySecret: process.env.ALIYUN_ACCESS_KEY_SECRET || '',
-  signName: '青岛视源眼镜',
+  signName: '青岛视源眼镜有限公司',
   templateCode: 'SMS_512035688',
   endpoint: 'dysmsapi.aliyuncs.com'
 };
