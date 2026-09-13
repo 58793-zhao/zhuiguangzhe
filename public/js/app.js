@@ -95,6 +95,14 @@ function formatMoney(num) {
   return '¥' + (parseFloat(num) || 0).toFixed(2);
 }
 
+// 格式化度数：正数加+号，负数加-号
+function formatPower(num) {
+  if (num === null || num === undefined || isNaN(num)) return '-';
+  const n = parseFloat(num);
+  if (n > 0) return '+' + n.toFixed(2);
+  return n.toFixed(2);
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return '-';
   return dateStr.replace('T', ' ').substring(0, 16);
@@ -232,8 +240,8 @@ async function loadDashboard() {
         optTbody.innerHTML = d.recentOptometries.map(o => `
           <tr>
             <td>${escapeHtml(o.member_name)}</td>
-            <td>${o.r_sphere ? o.r_sphere.toFixed(2) : '-'}${o.r_cylinder ? ' / ' + o.r_cylinder.toFixed(2) : ''}</td>
-            <td>${o.l_sphere ? o.l_sphere.toFixed(2) : '-'}${o.l_cylinder ? ' / ' + o.l_cylinder.toFixed(2) : ''}</td>
+            <td>${o.r_sphere != null ? formatPower(o.r_sphere) : '-'}${o.r_cylinder != null ? ' / ' + formatPower(o.r_cylinder) : ''}</td>
+            <td>${o.l_sphere != null ? formatPower(o.l_sphere) : '-'}${o.l_cylinder != null ? ' / ' + formatPower(o.l_cylinder) : ''}</td>
             <td>${formatDate(o.created_at)}</td>
           </tr>
         `).join('');
@@ -1051,8 +1059,8 @@ function renderOptometries() {
       <td>${escapeHtml(o.phone) || '-'}</td>
       <td>${o.age || '-'}</td>
       <td>${escapeHtml(o.gender) || '-'}</td>
-      <td>${o.r_sphere ? o.r_sphere.toFixed(2) : '-'}${o.r_cylinder ? ' / ' + o.r_cylinder.toFixed(2) + ' / ' + (o.r_axis || 0) : ''}</td>
-      <td>${o.l_sphere ? o.l_sphere.toFixed(2) : '-'}${o.l_cylinder ? ' / ' + o.l_cylinder.toFixed(2) + ' / ' + (o.l_axis || 0) : ''}</td>
+      <td>${o.r_sphere != null ? formatPower(o.r_sphere) : '-'}${o.r_cylinder != null ? ' / ' + formatPower(o.r_cylinder) + ' / ' + (o.r_axis || 0) : ''}</td>
+      <td>${o.l_sphere != null ? formatPower(o.l_sphere) : '-'}${o.l_cylinder != null ? ' / ' + formatPower(o.l_cylinder) + ' / ' + (o.l_axis || 0) : ''}</td>
       <td>右${o.r_pd || '-'} / 左${o.l_pd || '-'}</td>
       <td>${escapeHtml(o.optometrist) || '-'}</td>
       <td>${formatDate(o.created_at)}</td>
@@ -1212,8 +1220,8 @@ async function loadOptometryHistoryForMember(memberId) {
         <div class="history-quick-item" onclick="fillOptometryFromHistory(${JSON.stringify(r).replace(/"/g, '&quot;')})">
           <div class="history-quick-date">${formatDate(r.created_at)} <span class="history-quick-num">第${res.data.length - idx}次</span></div>
           <div class="history-quick-eyes">
-            <span>右：${r.r_sphere !== null ? r.r_sphere.toFixed(2) : '-'}${r.r_cylinder ? ' / ' + r.r_cylinder.toFixed(2) + ' / ' + (r.r_axis || 0) : ''}</span>
-            <span>左：${r.l_sphere !== null ? r.l_sphere.toFixed(2) : '-'}${r.l_cylinder ? ' / ' + r.l_cylinder.toFixed(2) + ' / ' + (r.l_axis || 0) : ''}</span>
+            <span>右：${r.r_sphere !== null ? formatPower(r.r_sphere) : '-'}${r.r_cylinder !== null ? ' / ' + formatPower(r.r_cylinder) + ' / ' + (r.r_axis || 0) : ''}</span>
+            <span>左：${r.l_sphere !== null ? formatPower(r.l_sphere) : '-'}${r.l_cylinder !== null ? ' / ' + formatPower(r.l_cylinder) + ' / ' + (r.l_axis || 0) : ''}</span>
             <span>右PD：${r.r_pd || '-'}</span>
             <span>左PD：${r.l_pd || '-'}</span>
             ${r.lens_brand ? `<span style="color:#1d4ed8;">🔍 ${escapeHtml(r.lens_brand)}</span>` : ''}
@@ -1406,8 +1414,8 @@ async function viewOptometryHistory(id) {
               <div class="eye-box">
                 <div class="eye-label">右眼 (R)</div>
                 <div class="eye-data">
-                  <span>球镜 <strong>${r.r_sphere !== null ? r.r_sphere.toFixed(2) : '-'}</strong></span>
-                  <span>柱镜 <strong>${r.r_cylinder !== null ? r.r_cylinder.toFixed(2) : '-'}</strong></span>
+                  <span>球镜 <strong>${r.r_sphere !== null ? formatPower(r.r_sphere) : '-'}</strong></span>
+                  <span>柱镜 <strong>${r.r_cylinder !== null ? formatPower(r.r_cylinder) : '-'}</strong></span>
                   <span>轴位 <strong>${r.r_axis || '-'}</strong></span>
                   <span>视力 <strong>${escapeHtml(r.r_vision) || '-'}</strong></span>
                 </div>
@@ -1415,8 +1423,8 @@ async function viewOptometryHistory(id) {
               <div class="eye-box">
                 <div class="eye-label">左眼 (L)</div>
                 <div class="eye-data">
-                  <span>球镜 <strong>${r.l_sphere !== null ? r.l_sphere.toFixed(2) : '-'}</strong></span>
-                  <span>柱镜 <strong>${r.l_cylinder !== null ? r.l_cylinder.toFixed(2) : '-'}</strong></span>
+                  <span>球镜 <strong>${r.l_sphere !== null ? formatPower(r.l_sphere) : '-'}</strong></span>
+                  <span>柱镜 <strong>${r.l_cylinder !== null ? formatPower(r.l_cylinder) : '-'}</strong></span>
                   <span>轴位 <strong>${r.l_axis || '-'}</strong></span>
                   <span>视力 <strong>${escapeHtml(r.l_vision) || '-'}</strong></span>
                 </div>
@@ -1460,12 +1468,12 @@ function printOptometry(id) {
   document.getElementById('print-store').textContent = o.store || '-';
   document.getElementById('print-lens-brand').textContent = o.lens_brand || '未填写';
   document.getElementById('print-frame-brand').textContent = o.frame_brand || '未填写';
-  document.getElementById('print-r-sphere').textContent = o.r_sphere ? o.r_sphere.toFixed(2) : '-';
-  document.getElementById('print-r-cylinder').textContent = o.r_cylinder ? o.r_cylinder.toFixed(2) : '-';
+  document.getElementById('print-r-sphere').textContent = o.r_sphere !== null ? formatPower(o.r_sphere) : '-';
+  document.getElementById('print-r-cylinder').textContent = o.r_cylinder !== null ? formatPower(o.r_cylinder) : '-';
   document.getElementById('print-r-axis').textContent = o.r_axis || '-';
   document.getElementById('print-r-vision').textContent = o.r_vision || '-';
-  document.getElementById('print-l-sphere').textContent = o.l_sphere ? o.l_sphere.toFixed(2) : '-';
-  document.getElementById('print-l-cylinder').textContent = o.l_cylinder ? o.l_cylinder.toFixed(2) : '-';
+  document.getElementById('print-l-sphere').textContent = o.l_sphere !== null ? formatPower(o.l_sphere) : '-';
+  document.getElementById('print-l-cylinder').textContent = o.l_cylinder !== null ? formatPower(o.l_cylinder) : '-';
   document.getElementById('print-l-axis').textContent = o.l_axis || '-';
   document.getElementById('print-l-vision').textContent = o.l_vision || '-';
   document.getElementById('print-diagnosis').textContent = o.diagnosis || '无';
