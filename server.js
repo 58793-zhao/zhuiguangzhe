@@ -496,6 +496,29 @@ app.get('/api/recharge-records', (req, res) => {
   res.json({ success: true, data: db.prepare(sql).all(...params) });
 });
 
+// 删除充值记录（同时扣回会员余额）
+app.delete('/api/recharge-records/:id', (req, res) => {
+  const record = db.prepare('SELECT * FROM recharge_records WHERE id = ?').get(req.params.id);
+  if (!record) return res.status(404).json({ success: false, message: '充值记录不存在' });
+  const member = db.prepare('SELECT * FROM members WHERE id = ?').get(record.member_id);
+  if (!member) return res.status(404).json({ success: false, message: '会员不存在' });
+  const totalDeduct = parseFloat(record.amount) + parseFloat(record.bonus || 0);
+  if (parseFloat(member.balance) < totalDeduct) {
+    return res.status(400).json({ success: false, message: '会员余额不足，无法删除该充值记录' });
+  }
+  try {
+    const tx = db.transaction(() => {
+      db.prepare("UPDATE members SET balance = balance - ?, updated_at=datetime('now','+8 hours') WHERE id = ?").run(totalDeduct, record.member_id);
+      db.prepare('DELETE FROM recharge_records WHERE id = ?').run(req.params.id);
+    });
+    tx();
+    const updated = db.prepare('SELECT balance FROM members WHERE id = ?').get(record.member_id);
+    res.json({ success: true, message: '充值记录已删除，余额已扣回', data: { balance: updated.balance } });
+  } catch (e) {
+    res.status(500).json({ success: false, message: '删除失败: ' + e.message });
+  }
+});
+
 // 会员详情：基本信息 + 消费记录 + 充值记录
 app.get('/api/members/:id/detail', (req, res) => {
   const memberId = req.params.id;

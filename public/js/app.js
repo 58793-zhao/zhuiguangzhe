@@ -506,7 +506,7 @@ async function viewMemberDetail(memberId) {
       document.getElementById('detail-recharge-count').textContent = recharges.length;
       const rechargesTbody = document.getElementById('detail-recharges-tbody');
       if (recharges.length === 0) {
-        rechargesTbody.innerHTML = '<tr><td colspan="7" class="empty-cell">暂无充值记录</td></tr>';
+        rechargesTbody.innerHTML = '<tr><td colspan="8" class="empty-cell">暂无充值记录</td></tr>';
       } else {
         rechargesTbody.innerHTML = recharges.map(r => `
           <tr>
@@ -517,6 +517,7 @@ async function viewMemberDetail(memberId) {
             <td><span class="feature-tag" style="font-size:11px;">${escapeHtml(r.pay_method)}</span></td>
             <td>${escapeHtml(r.store) || '-'}</td>
             <td>${escapeHtml(r.remark) || '-'}</td>
+            <td><button class="action-btn delete" style="font-size:11px;padding:2px 8px;" onclick="deleteRecharge(${r.id},${r.member_id})">删除</button></td>
           </tr>
         `).join('');
       }
@@ -542,6 +543,22 @@ function switchDetailTab(tab) {
   } else if (tab === 'recharges') {
     document.querySelectorAll('.detail-tab')[1].classList.add('active');
     document.getElementById('detail-recharges-panel').style.display = 'block';
+  }
+}
+// 删除充值记录
+async function deleteRecharge(id, memberId) {
+  if (!confirm('确定要删除这条充值记录吗？删除后会员余额会相应扣回。')) return;
+  try {
+    const res = await api('/api/recharge-records/' + id, { method: 'DELETE' });
+    if (res.success) {
+      showToast('删除成功，余额已扣回');
+      // 重新加载会员详情
+      loadMemberDetail(memberId);
+    } else {
+      showToast(res.message || '删除失败', 'error');
+    }
+  } catch (err) {
+    showToast('删除失败', 'error');
   }
 }
 
