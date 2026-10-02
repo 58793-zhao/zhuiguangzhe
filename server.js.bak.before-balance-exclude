@@ -820,26 +820,26 @@ app.put('/api/settings', (req, res) => {
 // --- 仪表盘 ---
 app.get('/api/dashboard', (req, res) => {
   const today = getTodayStr();
-  const todayRevenue = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成' AND pay_method != '余额'").get(today);
+  const todayRevenue = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成'").get(today);
   const todayOrders = db.prepare("SELECT COUNT(*) as c FROM orders WHERE date(created_at) = ?").get(today);
   const totalMembers = db.prepare('SELECT COUNT(*) as c FROM members').get();
   const lowStockProducts = db.prepare('SELECT * FROM products WHERE stock <= min_stock ORDER BY stock ASC').all();
   const recentOrders = db.prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT 10').all();
   const recentOptometries = db.prepare('SELECT * FROM optometries ORDER BY created_at DESC LIMIT 10').all();
   const monthStart = today.slice(0, 7) + '-01';
-  const monthRevenue = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成' AND pay_method != '余额'").get(monthStart);
+  const monthRevenue = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成'").get(monthStart);
   const totalProducts = db.prepare('SELECT COUNT(*) as c FROM products').get();
   const lowStockCount = db.prepare('SELECT COUNT(*) as c FROM products WHERE stock <= min_stock').get();
   
   // 按门店统计今日营业额
-  const todayRevenueChangzhou = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成' AND store = ? AND pay_method != '余额'").get(today, '常州路店');
-  const todayRevenueZhongqi = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成' AND store = ? AND pay_method != '余额'").get(today, '中启广场店');
+  const todayRevenueChangzhou = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成' AND store = ?").get(today, '常州路店');
+  const todayRevenueZhongqi = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) = ? AND status = '已完成' AND store = ?").get(today, '中启广场店');
   const todayOrdersChangzhou = db.prepare("SELECT COUNT(*) as c FROM orders WHERE date(created_at) = ? AND store = ?").get(today, '常州路店');
   const todayOrdersZhongqi = db.prepare("SELECT COUNT(*) as c FROM orders WHERE date(created_at) = ? AND store = ?").get(today, '中启广场店');
 
   // 按门店统计本月营业额
-  const monthRevenueChangzhou = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成' AND store = ? AND pay_method != '余额'").get(monthStart, '常州路店');
-  const monthRevenueZhongqi = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成' AND store = ? AND pay_method != '余额'").get(monthStart, '中启广场店');
+  const monthRevenueChangzhou = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成' AND store = ?").get(monthStart, '常州路店');
+  const monthRevenueZhongqi = db.prepare("SELECT COALESCE(SUM(final_amount), 0) as total FROM orders WHERE date(created_at) >= ? AND status = '已完成' AND store = ?").get(monthStart, '中启广场店');
 
   res.json({
     success: true,
