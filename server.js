@@ -507,11 +507,10 @@ app.delete('/api/recharge-records/:id', (req, res) => {
     return res.status(400).json({ success: false, message: '会员余额不足，无法删除该充值记录' });
   }
   try {
-    const tx = db.transaction(() => {
+    transaction(() => {
       db.prepare("UPDATE members SET balance = balance - ?, updated_at=datetime('now','+8 hours') WHERE id = ?").run(totalDeduct, record.member_id);
       db.prepare('DELETE FROM recharge_records WHERE id = ?').run(req.params.id);
     });
-    tx();
     const updated = db.prepare('SELECT balance FROM members WHERE id = ?').get(record.member_id);
     res.json({ success: true, message: '充值记录已删除，余额已扣回', data: { balance: updated.balance } });
   } catch (e) {
